@@ -5,6 +5,8 @@
 # Copyright (c) 2015 arsh0r
 # See the file LICENSE for copying permission.
 
+from __future__ import print_function
+
 import os, time
 import numpy as np
 import matplotlib
@@ -28,8 +30,10 @@ def read_datafile(file_name):
                            converters={0: mdates.strpdate2num('%Y-%m-%d %H:%M:%S')})
    return data
 
-def makefig (fn):
+def makefig (fn, fdata):
     data = read_datafile(fn+'.csv.xz')
+    print(mdates.num2date(data['ts'][0]).strftime('%Y-%m-%d')+','+str(np.sum(data['heat_quantity'])), file=fdata)
+
     fig = plt.figure(figsize=(10.24,7.68),dpi=80)
 
     ax1 = fig.add_subplot(211)
@@ -64,14 +68,15 @@ def makefig (fn):
     ax4.plot_date(x=data['ts'], y=data['tdiff'], tz=None, xdate=True, fmt='-', color='green', label='tdiff')
 
     plt.savefig(fn+'.png')
+    plt.close(fig)
 
-
-
+fdata = open("data.csv", "a")
+print('date,heat_quantity',file=fdata) 
 for filename in os.listdir('.'):
     fn, ext = filename.split('.', 1) 
     fnnow = time.strftime('%y%m%d')+'_heatmeter'   
     if (ext == 'csv.xz' and fn != fnnow):
         if not os.path.isfile(fn+'.png'):
             print('creating '+fn+'.png')            
-            makefig(fn)
+            makefig(fn, fdata)
 
