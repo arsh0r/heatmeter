@@ -98,7 +98,31 @@ void loop(void) {
   else {
     time_flow_pause = time_flow_pause + cycle;
   }
-  if (!digitalRead(8)) {
+  if (time_flow_pause > 900000) {
+        if (tdiff_count > 0) { //prevent div/0
+          tdiff = tdiff_sum / tdiff_count;
+          tdiff_sum = 0.0;
+          tdiff_count = 0;
+        }
+        time_pulse = 0.0;
+        flow_rate = 0.0;
+        heat_power = 0.0;
+        Serial.print(heat_power,3);
+        Serial.print(",");
+        Serial.print(flow_rate,3);
+        Serial.print(",");
+        Serial.print(tdiff,2);
+        Serial.print(",");
+        Serial.print(heat_power*time_pulse/3600,6);
+        Serial.print(",");
+        Serial.print(temperature[0],1);
+        Serial.print(",");
+        Serial.print(temperature[1],1);
+        Serial.println(); //finish print values
+        time_flow_pause = 0;
+        time_flow_pulse = 0;
+  }
+  else if (!digitalRead(8)) {
     digitalWrite(13, HIGH); //LED
     time_flow_pulse = time_flow_pulse + cycle;
     if (time_flow_pulse >= 100) { //wait 100 ms before counting as pulse
@@ -132,6 +156,7 @@ void loop(void) {
         Serial.print(time_flow_pause);
         Serial.print(",");
 #endif
+        Serial.println(); //finish print values   
         time_flow_pause = 0;
         is_flow_pulse = true;
       }
@@ -141,9 +166,8 @@ void loop(void) {
     digitalWrite(13, LOW); //LED
     if (is_flow_pulse) {
 #ifdef DEBUG
-      Serial.print(time_flow_pulse);
+      Serial.println(time_flow_pulse);
 #endif
-      Serial.println(); //finish print values   
     }
     time_flow_pulse = 0;
     is_flow_pulse = false;
